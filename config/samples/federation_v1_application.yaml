@@ -1,0 +1,11 @@
+apiVersion: federation.kubefed.fulliautomatix.site/v1
+kind: Application
+metadata:
+  name: whoami-test
+spec:
+  type:  "Helm"
+  template:
+      chart:
+        name: "whoami"
+        repoUrl: "https://halkeye.github.io/helm-charts/"
+        namespace: "kubefed-poc"

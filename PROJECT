@@ -1,0 +1,7 @@
+domain: kubefed.fulliautomatix.site
+repo: kubefed-application-controller
+resources:
+- group: federation
+  kind: Application
+  version: v1
+version: "2"
