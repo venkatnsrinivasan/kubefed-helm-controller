@@ -122,21 +122,21 @@ func (r *ApplicationReconciler) deployApplication(application federationv1.Appli
 	}
 	template, err := helmClient.Template(application.ObjectMeta.Name, chartName, chartRepo, util.GlobalOptions{Namespace: application.Spec.Template.Chart.Namespace})
 	if err != nil {
-		log.Error(err, "Unable to createTemplate application")
-		return fmt.Errorf("Invalid to generate a helm template from chart %s", chartName)
+		log.Error(err, "Unable to create template for application")
+		return fmt.Errorf("Unable to generate a helm template from chart %s", chartName)
 	}
 
 	kubefedConverter, err := util.NewFederatedResourceConverter(template)
 	if err != nil {
-		return fmt.Errorf("Invalid to create a kubefedctl converter")
+		return fmt.Errorf("Unable to create a kubefedctl converter")
 	}
 	fedResources, err := kubefedConverter.GenerateFederatedUnstructuredList(template)
 	if err != nil {
-		return fmt.Errorf("Invalid to  generate a federated manifest")
+		return fmt.Errorf("Unable to  generate a federated manifest")
 	}
 	dynamicClient, err := util.NewServerSideDeployer(r.Config)
 	if err != nil {
-		return fmt.Errorf("Invalid to create a dynamic client")
+		return fmt.Errorf("Unable to create a dynamic client")
 	}
 	for _, eachFederatedResource := range fedResources {
 		err = dynamicClient.Apply(*eachFederatedResource, application.Spec.Template.Chart.Namespace)
