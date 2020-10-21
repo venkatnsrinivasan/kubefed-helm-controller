@@ -141,9 +141,8 @@ func (r *ApplicationReconciler) deployApplication(application federationv1.Appli
 	for _, eachFederatedResource := range fedResources {
 		err = dynamicClient.Apply(*eachFederatedResource, application.Spec.Template.Chart.Namespace)
 	}
-	// r.Log.V(1).Info("Manifest", " YAML ", fedResourceYaml)
 
-	//TODO add support for version and custom repo.
+	//TODO add support for specific chart versions.
 	return err
 }
 
