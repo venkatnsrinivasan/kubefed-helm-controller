@@ -5,6 +5,7 @@ kind: CustomResourceDefinition
 metadata:
   name: applications.federation.kubefed.fulliautomatix.site
 spec:
+  preserveUnknownFields: false
   conversion:
     strategy: Webhook
     webhookClientConfig:

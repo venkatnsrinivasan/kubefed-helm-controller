@@ -76,7 +76,6 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (result ctrl.Result,
 
 	application.Status.State = federationv1.Deploying
 
-
 	// First validate the input application
 	err = r.validateApplication(application)
 	if err != nil {

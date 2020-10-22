@@ -40,21 +40,26 @@ type ApplicationTemplateSpec struct {
 }
 type HelmChartSpec struct {
 
+	// Name of the helm chart
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 
+	// Namespace where the chart artifacts should be deployed
 	// +kubebuilder:validation:Optional
 	Namespace string `json:"namespace"`
 
-	// +kubebuilder:validation:Optional
-	Repo string `json:"repoUrl,omitempty"`
+	// Repository to fetch the helm chart from
+	// +kubebuilder:validation:required
+	Repo string `json:"repoUrl"`
 
+	// Installing a specific version
 	// +kubebuilder:validation:Optional
 	Version string `json:"version,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
+	// Defines an application type , by default it is Helm .
 	// +kubebuilder:validation:Required
 	Type ApplicationType `json:"type"`
 	// +kubebuilder:validation:Required
