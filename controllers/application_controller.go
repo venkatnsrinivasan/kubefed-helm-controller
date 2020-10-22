@@ -52,22 +52,12 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (result ctrl.Result,
 	var application federationv1.Application
 	err := r.Get(context, req.NamespacedName, &application)
 
-	if application.ObjectMeta.DeletionTimestamp.IsZero() {
-		// Register our finalizer so that the hook is called before the application is deleted
-		if !containsString(application.ObjectMeta.Finalizers, applicationFinalizer) {
-			application.ObjectMeta.Finalizers = append(application.ObjectMeta.Finalizers, applicationFinalizer)
-			if err := r.Update(context, &application); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-	} else {
-		// TODO: Need to clean up all the federated resources
-	}
 	if err != nil {
 		log.Error(err, "Unable to fetch application")
 		// Skip if not found
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
 	defer func() {
 		err := r.Client.Update(context, &application)
 		if err != nil {
@@ -77,7 +67,16 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (result ctrl.Result,
 			}
 		}
 	}()
+
+	retVal, err := r.handleFinalizers(&application)
+	// if there is an error or the finalizers have been added/removed from our Application, then return
+	if err != nil || retVal {
+		return ctrl.Result{}, err
+	}
+
 	application.Status.State = federationv1.Deploying
+
+
 	// First validate the input application
 	err = r.validateApplication(application)
 	if err != nil {
@@ -100,6 +99,27 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (result ctrl.Result,
 	application.Status.DeployedTimestamp = &metav1.Time{Time: time.Now()}
 	return ctrl.Result{}, nil
 }
+
+func (r *ApplicationReconciler) handleFinalizers(application *federationv1.Application) (bool, error) {
+	if application.ObjectMeta.DeletionTimestamp.IsZero() {
+		// Register our finalizer so that the hook is called before the application is deleted
+		if !containsString(application.ObjectMeta.Finalizers, applicationFinalizer) {
+			application.ObjectMeta.Finalizers = append(application.ObjectMeta.Finalizers, applicationFinalizer)
+			return true, nil
+		}
+	} else {
+		if containsString(application.ObjectMeta.Finalizers, applicationFinalizer) {
+
+			// TODO: Need to clean up all the federated resources
+			application.ObjectMeta.Finalizers = removeString(application.ObjectMeta.Finalizers, applicationFinalizer)
+			return true, nil
+
+		}
+		// if its being deleted and the finalizer doesnt exist then the object can continue to get deleted
+		return true, nil
+	}
+	return false, nil
+}
 func (r *ApplicationReconciler) validateApplication(application federationv1.Application) error {
 	if application.Spec.Type == "" || application.Spec.Type != federationv1.Helm {
 		return fmt.Errorf("Invalid application type %s .Only Helm is supported", application.Spec.Type)
@@ -109,7 +129,7 @@ func (r *ApplicationReconciler) validateApplication(application federationv1.App
 	if chartName == "" {
 		return fmt.Errorf("Invalid chart name %s ", chartName)
 	}
-	// TODO : all validation to check if its a valid chart by downloading
+	// TODO : maybe add validation to check if its a valid chart by downloading
 	return nil
 }
 
