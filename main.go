@@ -75,6 +75,12 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
 	}
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err = (&federationv1.Application{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Application")
+			os.Exit(1)
+		}
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
