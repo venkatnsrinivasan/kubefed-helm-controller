@@ -39,20 +39,26 @@ spec:
                 chart:
                   properties:
                     name:
+                      description: Name of the helm chart
                       type: string
                     namespace:
+                      description: Namespace where the chart artifacts should be deployed
                       type: string
                     repoUrl:
+                      description: Repository to fetch the helm chart from
                       type: string
                     version:
+                      description: Installing a specific version
                       type: string
                   required:
                   - name
+                  - repoUrl
                   type: object
               required:
               - chart
               type: object
             type:
+              description: Defines an application type , by default it is Helm .
               type: string
           required:
           - template
